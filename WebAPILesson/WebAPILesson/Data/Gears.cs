@@ -18,5 +18,11 @@ namespace WebAPILesson.Data
         [Required]
         [Range(0,int.MaxValue)]
         public int quantity { get; set; }
+
+        public ICollection<OrderItem> orderItems { get; set; }  
+        public Gears()
+        {
+            orderItems = new List<OrderItem>();
+        }
     }
 }

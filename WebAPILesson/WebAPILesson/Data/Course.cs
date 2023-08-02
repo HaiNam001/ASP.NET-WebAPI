@@ -19,6 +19,9 @@ namespace WebAPILesson.Data
         public DateTime schedule { get; set; }
         [Required]
         public double price { get; set; }
-        
+        public ICollection<CourseEnrollment> courseEnrollments { get; set; }
+        public Course() { 
+            courseEnrollments = new List<CourseEnrollment>();
+        }
     }
 }
