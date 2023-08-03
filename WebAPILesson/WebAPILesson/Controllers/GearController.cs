@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using WebAPILesson.Data;
 using WebAPILesson.Models;
+using WebAPILesson.Services;
 
 namespace WebAPILesson.Controllers
 {
@@ -10,74 +11,49 @@ namespace WebAPILesson.Controllers
     [ApiController]
     public class GearController : ControllerBase
     {
-        private readonly MyDbContext _context;
-        public GearController(MyDbContext context)
+        private readonly IGearRepository _gearRepository;
+        public GearController(IGearRepository gearRepository)
         {
-            _context = context;
+            _gearRepository = gearRepository;
         }
         [HttpGet]
-        public  IActionResult GetAll()
+        public async Task<IActionResult> GetAllGears()
         {
-            var gears = _context.Gears.ToList();
-            return Ok(gears);
+            try
+            {
+                return Ok( await _gearRepository.GetAllGearsAsync());
+            }
+            catch (Exception)
+            {
+
+               return BadRequest();
+            }
+
         }
         [HttpGet("{id}")]
 
-        public IActionResult GetById(int id) {
-            var gear = _context.Gears.SingleOrDefault(x=>x.gear_id==id);
-            if(gear !=null)
-            {
-                return Ok(gear);
-            }
-            else
-            {
-                return NotFound();
-            }
+        public async Task<IActionResult> GetGearById(int id) {
+            var gear = await _gearRepository.GetGearAsync(id);
+            return gear == null? NotFound() : Ok(gear);
         }
         [HttpPost]
-        public IActionResult Add(GearModel model) {
-            try
-            {
-                var gear = new Gears
-                {
-                    grear_name = model.grear_name,
-                    description = model.description,
-                    price = model.price,
-                    image_url = model.image_url,
-                    quantity = model.quantity
-                };
-                _context.Gears.Add(gear);
-                _context.SaveChanges();
-                return Ok(gear);
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
+        public async Task<IActionResult> Add(GearModel model) {
+            await _gearRepository.AddGearAsync(model);
+            return Ok();
         }
         [HttpPut("{id}")]
-        public IActionResult Update(GearModel model,int id)
+        public async Task<IActionResult> Update(GearModel model,int id)
         {
-            try
-            {
-                var gear = _context.Gears.SingleOrDefault(x => x.gear_id == id);
-                if(gear != null)
-                {
-                    gear.grear_name = model.grear_name;
-                    gear.description = model.description;
-                    gear.price = model.price;
-                    gear.image_url = model.image_url;
-                    gear.quantity = model.quantity;
-                }
-                _context.SaveChanges();
-                return NoContent();
-            }
-            catch (Exception)
-            {
+            await _gearRepository.UpdateGearAsync(model,id);
+            return Ok();
 
-                return BadRequest();
-            }
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _gearRepository.DeleteGearAsync(id);
+            return Ok();
+        }
     }
 }
